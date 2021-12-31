@@ -1,10 +1,14 @@
 package services
 
 import (
+	"encoding/json"
+	"net/http"
+	"os"
+	"simplegoapi/src/errors"
+	"strings"
+
 	"github.com/Nerzal/gocloak/v8"
 	_ "github.com/gorilla/mux"
-	"net/http"
-	"strings"
 )
 
 type LoginResponse struct {
@@ -13,56 +17,50 @@ type LoginResponse struct {
 	Description string `json:"Description"`
 }
 
-const clientId = "sidekiq-client"
-const clientSecret = "350c66b6-6762-493c-837e-4675e33adf66"
-const  realm = "Sidekiq"
-const hostname = "https://keycloak.sidekik.ng"
+var (
+	clientId     = os.Getenv("CLIENT_ID")
+	clientSecret = os.Getenv("CLIENT_SECRET")
+	realm        = os.Getenv("REALM")
+	hostname     = os.Getenv("HOST")
+)
 
 var client gocloak.GoCloak
 
-func InitKeycloakClient(){
+func InitializeOauthServer() {
 	client = gocloak.NewClient(hostname)
 }
 
+func Protect(next http.Handler) http.Handler {
 
-
-
-func Protect(role string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		accessToken := strings.Split(r.Header.Get("Authorization")," ")[1]
+		authHeader := r.Header.Get("Authorization")
 
-		if len(accessToken) < 1 {
+		if len(authHeader) < 1 {
 			w.WriteHeader(401)
+			json.NewEncoder(w).Encode(errors.UnauthorizedError())
 			return
 		}
+
+		accessToken := strings.Split(authHeader, " ")[1]
 
 		rptResult, err := client.RetrospectToken(r.Context(), accessToken, clientId, clientSecret, realm)
 
-		if err != nil{
-			panic(err)
-		}
-
-
-		isTokenValid := *rptResult.Active
-
-
-		if !isTokenValid {
-
-			w.WriteHeader(401)
+		if err != nil {
+			w.WriteHeader(400)
+			json.NewEncoder(w).Encode(errors.BadRequestError(err.Error()))
 			return
 		}
 
-		permissions := *rptResult.Permissions
-		println(permissions)
+		isTokenValid := *rptResult.Active
 
-		if len(role) > 0 {
-
+		if !isTokenValid {
+			w.WriteHeader(401)
+			json.NewEncoder(w).Encode(errors.UnauthorizedError())
+			return
 		}
-
 
 		// Our middleware logic goes here...
 		next.ServeHTTP(w, r)
 	})
 }
-

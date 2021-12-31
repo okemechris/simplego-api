@@ -1,32 +1,36 @@
 package main
 
 import (
-	"fmt"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"simplegoapi/src/config"
 	"simplegoapi/src/controllers"
-	"simplegoapi/src/domains"
 	"simplegoapi/src/services"
-
-	"github.com/gorilla/mux"
 )
 
-func homepage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello world")
-}
+
 
 func main() {
-	domains.DbConnect()
-	services.InitKeycloakClient()
-	router := mux.NewRouter().StrictSlash(true)
-	router.Use(commonMiddleware)
-	router.HandleFunc("/", homepage)
-	registerRoutes(controllers.EventController(1), router)
-
-	log.Fatal(http.ListenAndServe(":8080", router))
+	run()
 }
 
-func registerRoutes(controller controllers.Controller, router *mux.Router) {
+func run(){
+	config.DbConnect()
+	services.InitializeOauthServer()
+	router := mux.NewRouter().StrictSlash(true)
+	router.Use(commonMiddleware)
+
+	registerRoutes(router)
+
+	log.Fatal(http.ListenAndServe(":8081", router))
+}
+
+func registerRoutes (router *mux.Router){
+	registerControllerRoutes(controllers.EventController{}, router)
+}
+
+func registerControllerRoutes(controller controllers.Controller, router *mux.Router) {
 	controller.RegisterRoutes(router)
 }
 
