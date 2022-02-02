@@ -6,7 +6,7 @@ import (
 
 type Event struct {
 	gorm.Model
-	ID          int    `json:"ID"`
-	Title       string `json:"Title"`
-	Description string `json:"Description"`
+	ID          int    `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
