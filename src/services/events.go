@@ -3,16 +3,17 @@ package services
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"simplegoapi/src/domains"
 	"simplegoapi/src/errors"
 	"simplegoapi/src/repositories"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
-func CreateEvent(w http.ResponseWriter, r *http.Request) {
+func Create(w http.ResponseWriter, r *http.Request) {
 	var newEvent domains.Event
 	reqBody, err := ioutil.ReadAll(r.Body)
 
@@ -22,8 +23,7 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	json.Unmarshal(reqBody, &newEvent)
 
-	ev, httpErr := repositories.SaveEvent(&newEvent)
-
+	ev, httpErr := repositories.Save(&newEvent)
 
 	if httpErr != nil {
 		w.WriteHeader(httpErr.Code)
@@ -35,9 +35,9 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&ev)
 }
 
-func GetOneEvent(w http.ResponseWriter, r *http.Request) {
+func Get(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	idStr := params[ "id"]
+	idStr := params["id"]
 
 	id, err := strconv.Atoi(idStr)
 
@@ -48,7 +48,7 @@ func GetOneEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	event := repositories.FindOneEventById(id)
+	event := repositories.FindOneById(id)
 
 	if event == nil {
 		w.WriteHeader(404)
@@ -59,9 +59,9 @@ func GetOneEvent(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&event)
 }
 
-func AllEvents(w http.ResponseWriter, r *http.Request) {
+func GetAll(w http.ResponseWriter, r *http.Request) {
 
-	events := repositories.FindAllEvents()
+	events := repositories.FindAll()
 
 	json.NewEncoder(w).Encode(&events)
 }

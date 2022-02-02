@@ -6,7 +6,7 @@ import (
 	"simplegoapi/src/errors"
 )
 
-func SaveEvent(event *domains.Event) (*domains.Event, *errors.HttpError) {
+func Save(event *domains.Event) (*domains.Event, *errors.HttpError) {
 
 	e := config.Database.Create(&event)
 
@@ -17,7 +17,7 @@ func SaveEvent(event *domains.Event) (*domains.Event, *errors.HttpError) {
 	return event, nil
 }
 
-func FindOneEventById(id int) *domains.Event {
+func FindOneById(id int) *domains.Event {
 	var event domains.Event
 
 	config.Database.First(&event, id)
@@ -25,9 +25,9 @@ func FindOneEventById(id int) *domains.Event {
 	return &event
 }
 
-func FindAllEvents() []domains.Event {
+func FindAll() []domains.Event {
 	var events []domains.Event
 	config.Database.Find(&events)
 
-   return events
+	return events
 }
