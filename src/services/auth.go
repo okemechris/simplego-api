@@ -2,13 +2,15 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"simplegoapi/src/errors"
 	"strings"
 
-	"github.com/Nerzal/gocloak/v8"
+	"github.com/Nerzal/gocloak/v10"
 	_ "github.com/gorilla/mux"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 type LoginResponse struct {
@@ -47,6 +49,7 @@ func Protect(next http.Handler) http.Handler {
 		rptResult, err := client.RetrospectToken(r.Context(), accessToken, clientId, clientSecret, realm)
 
 		if err != nil {
+			fmt.Println(err)
 			w.WriteHeader(400)
 			json.NewEncoder(w).Encode(errors.BadRequestError(err.Error()))
 			return
