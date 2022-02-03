@@ -1,21 +1,30 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
+	"fmt"
 	"log"
 	"net/http"
 	"simplegoapi/src/config"
 	"simplegoapi/src/controllers"
 	"simplegoapi/src/services"
+
+	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
+func init() {
+	err := godotenv.Load(".env")
 
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
 
 func main() {
 	run()
 }
 
-func run(){
+func run() {
 	config.DbConnect()
 	services.InitializeOauthServer()
 	router := mux.NewRouter().StrictSlash(true)
@@ -23,10 +32,11 @@ func run(){
 
 	registerRoutes(router)
 
+	fmt.Println("listening on: http://localhost:8081")
 	log.Fatal(http.ListenAndServe(":8081", router))
 }
 
-func registerRoutes (router *mux.Router){
+func registerRoutes(router *mux.Router) {
 	registerControllerRoutes(controllers.EventController{}, router)
 }
 

@@ -34,6 +34,14 @@ Remember to set the following in the console to what you have in your `.env` fil
 - `CLIENT_SECRET`
 - `REALM`
 
+
+### Client with a client secret
+First create a client on the console inside the realm you have made. 
+
+Inside the settings tab you want to change "Access Type" to `confidential` then hit save. Refresh the page and you will see new tabs. Click on credentials and you should see a client secret which you can then copy into your `.env`.
+
+Note: set the "Valid redirect URIs" to `*`.
+
 ## Auth
 
 Authorization is handled by keycloak via an interceptor. Keycloak is an open source library which provides many useful features such as: 
@@ -54,11 +62,23 @@ This project follows a domain driven design approach.
 Example event object: 
 ```json
 {
-    "id": "1",
-    "title": "my event",
-    "description": "test event"
+    "ID": 1,
+    "CreatedAt": "2022-02-03T10:18:40.797376Z",
+    "UpdatedAt": "2022-02-03T10:18:40.797376Z",
+    "DeletedAt": null,
+    "title": "1st event",
+    "description": "this is my 1st event with keycloak"
 }
 ```
+
+To make any of this endpoints work we need to be an authenticated user. The quickest way to do that is first create a user on your realm in the admin console. Then go over to postman and create a new request. Inside the authorization tab set the `Grant Type` to `Password credentials`. Then fill out the details including your clientId, clientSecret, username and password for the user you just created. 
+
+The access token url should look like this: `http://localhost:8080/auth/realms/example/protocol/openid-connect/token`. 
+
+Set the `Client Authentication` to be "send as Basic Auth header" then generate your token. 
+
+Note: On the admin console in the client settings make you turn on the setting: `Direct Access Grants Enabled` to enable this flow. 
+
 
 - `POST` `/event` creates an event
 - `GET` `/event/{id}` get an event
